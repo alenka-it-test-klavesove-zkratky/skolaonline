@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --btn-hover: #2563eb;
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Views Transition Logic */
+        .view {
+            padding: 30px;
+            opacity: 0;
+            display: none;
+            transition: opacity 0.6s ease-in-out;
+            flex-grow: 1;
+        }
+
+        .view.active {
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+        }
+
+        /* Typography */
+        h1, h2 {
+            font-weight: 600;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        h1 { font-size: 1.5rem; color: var(--text-primary); }
+        h2 { font-size: 1.25rem; color: var(--accent-blue); }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        strong { color: var(--text-primary); }
+
+        /* Components */
+        .alert-box {
+            border-left: 4px solid var(--accent-red);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .alert-title {
+            color: var(--accent-red);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .app-notification {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-style: italic;
+            border: 1px dashed var(--text-secondary);
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+        }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, background-color 0.2s;
+            margin-top: auto;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--btn-hover);
+            transform: scale(1.02);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .list-warning li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .list-warning li::before {
+            content: "•";
+            color: var(--accent-red);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* Scanning Specifics */
+        .scan-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 40px 0;
+        }
+
+        .scanner-loader {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(59, 130, 246, 0.3);
+            border-top: 4px solid var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #scan-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            min-height: 1.5em;
+            color: var(--text-primary);
+        }
+
+        #scan-subtext {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            min-height: 1.5em;
+            opacity: 0.7;
+        }
+
+        .detection-counter {
+            margin-top: 40px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+            transition: color 0.3s ease;
+        }
+
+        .detection-green { color: var(--accent-green); }
+        .detection-red { color: var(--accent-red); }
+
+        /* Results */
+        .result-section {
+            margin-bottom: 20px;
+        }
+        
+        .result-label {
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: bold;
+        }
+
+        /* Fade transition utility for text */
+        .fade-text {
+            animation: fadeEffect 0.5s ease-in-out;
+        }
+
+        @keyframes fadeEffect {
+            0% { opacity: 0; transform: translateY(5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .container { border-radius: 0; min-height: 100vh; }
+            h1 { font-size: 1.3rem; }
+            .view { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="view-alert" class="view active">
+            <h1>Máte nové upozornění:</h1>
+            
+            <div class="alert-box">
+                <span class="alert-title">Blokováno</span>
+                Aplikace Škola Online zasílá oznámení. Tohle oznámení bylo zablokováno, protože funkce App Block Security Carantena Aply Recommended NTS CyberSecure aplikaci drží v karanténě jako škodlivou.
+            </div>
+
+            <div class="app-notification">
+                <strong>Text oznámení od aplikace:</strong><br>
+                "Přihlaste se prosím ke svému účtu školaOnline. Děkuji"
+            </div>
+
+            <div class="divider"></div>
+
+            <p style="color: var(--accent-blue); font-weight: 500;">CyberSecure Vás žádá:</p>
+            <p>
+                Tohle oznámení nebo aplikace mohou být nebezpečné, může jít o podvod nebo kybernetický útok. Nikam se raději nepřihlašujte.
+            </p>
+            <p>
+                Pokud máte zájem, můžete bezpečně spustit hloubkový sken aplikace ŠkolaOnline, který odhalí přesné potíže s aplikací (Doporučeno):
+            </p>
+
+            <button class="btn" onclick="navigateTo('view-instructions')">Skenovat aplikaci</button>
+        </div>
+
+        <div id="view-instructions" class="view">
+            <h2>Na co se ještě budete muset podívat:</h2>
+            
+            <ul class="list-warning" style="list-style: none; margin: 20px 0;">
+                <li>Během skenování nezavírejte aplikaci CyberSecure NTS</li>
+                <li>Nevypínejte ručně telefon (automatické vypnutí CyberSecure v době skenování zakáže)</li>
+                <li>Neprovádějte restart</li>
+                <li>Hovory můžete přijmout (pouze volající hovory), nevytáčejte nové hovory nebo ručně nevolejte na zmeškané - může to operaci rozbít</li>
+            </ul>
+
+            <button class="btn" onclick="startScan()">Rozumím, začít hledat</button>
+        </div>
+
+        <div id="view-scan" class="view">
+            <h2>Hledání v aplikaci: Škola Online - hloubkový test</h2>
+            
+            <div class="scan-container">
+                <div class="scanner-loader"></div>
+                
+                <div id="scan-text-container">
+                    <div id="scan-text">Inicializace...</div>
+                    <div id="scan-subtext">Prosím čekejte</div>
+                </div>
+
+                <div id="detection-status" class="detection-counter detection-green">
+                    Nalezeno bezpečnostních detekcí: 0
+                </div>
+            </div>
+        </div>
+
+        <div id="view-results" class="view">
+            <h1 style="color: var(--accent-red)">Výsledky hloubkové kontroly Škola Online</h1>
+            
+            <div style="overflow-y: auto; max-height: 60vh; padding-right: 5px;">
+                <div class="result-section">
+                    <span class="result-label">Výsledek skenu</span>
+                    <p>
+                        Čistá instalace pracuje s 429 servery, instalace na tomto zařízení s 430 servery. Data odeslaná při přihlášení jsou ověřována pomocí TLS, namísto SSL! Po přihlášení má dojít k přesměrování na server "skola.online.dub.hejtm", ten ale není součástí standardní instalace! Server se chová podezřele, obsahuje nezabezpečené informace, škodlivé skripty pro spuštění a další, které mají být provedeny na tomto zařízení. CyberSecure zůstane nadále v režimu blokování této aplikace.
+                    </p>
+                </div>
+                
+                <div class="divider"></div>
+
+                <div class="result-section">
+                    <span class="result-label">AI analýza</span>
+                    <p>
+                        Škola Online je součástí softwarové společnosti Bakaláři. Na internetu je spousta kladných i záporných recenzí, ale žádné nezmiňují, že jde o malware. Společnost Bakaláři nabízí možnost ke svým produktům (jako je právě Škola Online) si zakoupit servery pro školy, aby měly školy snazší manipulaci s daty. Bakaláři také eviduje seznam těchto prodaných serverů. Ve veřejném hledání se vyskytl záznam, že jeden tento server byl zakoupen společností ZŠ a MŠ Dub nad Moravou, příspěvková organizace. Jde o stejnou instituci, ke které patří přihlašovací údaje k aplikaci. Dle veřejného hledání byl server doručen a "převzala škola, podpis Barbora Hejtmánková" - část názvu serveru se shoduje s tímto jménem, což vede určitým směrem. Daný server obsahuje několik škodlivých skriptů, které mohou ovlivnit vaše zařízení, data atd. Tento server má být inicializován po spuštění a přihlášení do aplikace.
+                    </p>
+                </div>
+
+                <div class="result-section">
+                    <span class="result-label">Můj verdikt</span>
+                    <p>
+                        Škola nebo škodolibá fyzická osoba koupila server za účelem poškození ostatních zařízení nebo byl bezpečný školní server napaden hackery. Zkuste vyčkat několik dní, jestli se stav nezmění. Pokud ne, můžete zvážit odinstalaci aplikace (pokud ji nepotřebujete) nebo zkusit kontaktovat školu provozující server s žádostí o vysvětlení.
+                    </p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 10px; border: 1px solid var(--text-secondary); padding: 10px; border-radius: 8px; display: inline-block;">
+                        <strong>Poloha serveru:</strong> Pod Školou 209, Dub nad Moravou, Olomouc, Czechia
+                    </p>
+                </div>
+            </div>
+
+            <button class="btn" style="background-color: var(--accent-green); margin-top: 20px;" onclick="closeApp()">Tuto aplikaci nyní můžete zavřít.</button>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURACE ---
+        // Nastavte na 1 pro reálný čas (hodiny čekání).
+        // Nastavte na vysoké číslo (např. 200) pro rychlé demo.
+        const SPEED_MULTIPLIER = 1; 
+        
+        console.log(`Demo běží se zrychlením ${SPEED_MULTIPLIER}x. Pro reálný čas změňte konstantu v kódu.`);
+
+        // --- DATA SKENOVÁNÍ ---
+        const scanSteps = [
+            { t: "Příprava skenování", s: "Připravujeme vše, co bude potřeba", time: "1 min 2 sek" },
+            { t: "Skenuji na přítomnost offline malwaru", s: "Zabere to jen chvíli", time: "3 min 24 sek" },
+            { t: "Skenuji síťový provoz <skolaonline>", s: "Zařízení se může odpojit na chvíli od internetu", time: "10 min 15 sek" },
+            { t: "Příprava prostřední SandBox", s: "Vyčkejte", time: "15 sek" },
+            { t: "Vytváří se čistá instalace", s: "Probíhá v izolovaném prostředí SandBox", time: "2 min" },
+            { t: "Porovnávání kritických událostí", s: "Porovnává se: více než 5 000 kritických událostí, může to chvilku zabrat", time: "19 min 5 sek", trigger: 1 },
+            { t: "Kontrola kódu aplikace", s: "Client Subsystem Runtime Server Antimalware Core CyberSecure NTS získává potřebné údaje...", time: "2 min 58 sek" },
+            { t: "Kontrola kódu aplikace", s: "Procházím 2 864 588 řádků... Tato operace může trvat přes hodinu! Mějte prosím strpení!", time: "46 min 45 sek" },
+            { t: "Kontrola připojených databází", s: "Děláme tak rychle, jak jen je to možné...", time: "2 min 2 sek" },
+            { t: "Kontrola připojených serverů", s: "Už je to skoro všechno", time: "7 min 42 sek", trigger: 2 },
+            { t: "Checking the behavior security alerts from <skolaonline>", s: "Prosím, čekejte...", time: "3 min 21 sek" },
+            { t: "Checking the (un)accepted servers", s: "Už to skoro je. Dejte nám ještě chvíli...", time: "5 min 1 sek" },
+            { t: "Takhle by to bylo skoro všechno, ale nyní ještě potřebujeme zjistit pár údajů", s: "Inicializuje se AI by NTS pro hledání internetových výsledků...", time: "1 min 5 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Škola Online vydavatel", time: "19 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Škola Online recenze", time: "21 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Škola Online security", time: "14 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Škola Online malware", time: "29 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Bakaláři Škola Online", time: "5 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Bakaláři software", time: "19 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Bakaláři servery", time: "45 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Bakaláři školní server", time: "5 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Bakaláři soukromý server", time: "17 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Bakaláři schvalovací procesy serverů", time: "29 sek" },
+            { t: "Hledání dotazů AI na internetu a vyhodnocení:", s: "Hledám: Bakaláři Škola Online login servers and poisiong", time: "48 sek" },
+            { t: "Příprava výsledků", s: "It's complete! Please wait a minute...", time: "13 sek" }
+        ];
+
+        // --- FUNKCE ---
+
+        function parseTime(timeStr) {
+            let totalMs = 0;
+            const minMatch = timeStr.match(/(\d+)\s*min/);
+            const secMatch = timeStr.match(/(\d+)\s*sek/);
+
+            if (minMatch) totalMs += parseInt(minMatch[1]) * 60000;
+            if (secMatch) totalMs += parseInt(secMatch[1]) * 1000;
+
+            return totalMs;
+        }
+
+        function navigateTo(viewId) {
+            const current = document.querySelector('.view.active');
+            const next = document.getElementById(viewId);
+
+            if(current) {
+                current.style.opacity = '0';
+                setTimeout(() => {
+                    current.classList.remove('active');
+                    current.style.display = 'none';
+                    
+                    next.style.display = 'flex';
+                    // Small delay to allow display change to register before opacity transition
+                    setTimeout(() => {
+                        next.classList.add('active');
+                        next.style.opacity = '1';
+                    }, 50);
+                }, 600);
+            }
+        }
+
+        async function startScan() {
+            navigateTo('view-scan');
+            
+            // Wait for transition
+            await new Promise(r => setTimeout(r, 700));
+
+            const textEl = document.getElementById('scan-text');
+            const subEl = document.getElementById('scan-subtext');
+            const statusEl = document.getElementById('detection-status');
+
+            for (let i = 0; i < scanSteps.length; i++) {
+                const step = scanSteps[i];
+                
+                // Animation fade out
+                textEl.style.opacity = 0;
+                subEl.style.opacity = 0;
+
+                await new Promise(r => setTimeout(r, 200));
+
+                // Change text
+                textEl.innerText = step.t;
+                subEl.innerText = step.s;
+                
+                // Animation fade in
+                textEl.style.opacity = 1;
+                subEl.style.opacity = 1;
+
+                // Duration wait
+                const duration = parseTime(step.time) / SPEED_MULTIPLIER;
+                await new Promise(r => setTimeout(r, duration));
+
+                // Check for triggers AFTER step is done
+                if (step.trigger === 1) {
+                    statusEl.innerText = "Nalezeno bezpečnostních detekcí: 1";
+                    statusEl.classList.remove('detection-green');
+                    statusEl.classList.add('detection-red');
+                    statusEl.classList.add('fade-text');
+                }
+                if (step.trigger === 2) {
+                    statusEl.innerText = "Nalezeno bezpečnostních detekcí: 2";
+                    statusEl.classList.remove('detection-green');
+                    statusEl.classList.add('detection-red');
+                    
+                    // Reset animation trigger
+                    statusEl.classList.remove('fade-text');
+                    void statusEl.offsetWidth; // trigger reflow
+                    statusEl.classList.add('fade-text');
+                }
+            }
+
+            // End of scan
+            navigateTo('view-results');
+        }
+
+        function closeApp() {
+            // In a real browser we can't always close the window via JS unless we opened it.
+            // We will simulate it by blanking the screen or showing a final message.
+            document.body.innerHTML = '<div style="color:white; font-family: sans-serif; text-align:center;">Aplikace ukončena.<br>Demo Secer</div>';
+        }
+    </script>
+</body>
+</html>
